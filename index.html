@@ -371,9 +371,10 @@
 
   // ============================================================
   // 排行榜配置：换成你自己的 Supabase 项目（Project Settings → API）
-  //   SUPABASE_URL      形如 https://abcdefghijklm.supabase.co
-  //   SUPABASE_ANON_KEY 是 anon public key（可以公开，别用 service_role）
-  // 两行都替换掉之后排行榜才会启用；保持占位符时页面会提示“还没接上”。
+  //   SUPABASE_URL  形如 https://abcdefghijklm.supabase.co
+  //   SUPABASE_ANON_KEY 填 anon public key 或新的 sb_publishable_... key
+  //   （两者都可以公开，千万别用 service_role / sb_secret_...）
+  // 两行都替换掉之后排行榜才会启用；保持占位符时会提示“还没接上”。
   // ============================================================
   const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
   const SUPABASE_ANON_KEY = "YOUR-SUPABASE-ANON-KEY";
@@ -529,11 +530,13 @@
     return Math.max(0, hp * 2 + Math.max(0, 12 - rounds) * 5);
   }
 
-  function sbHeaders(){
-    return {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: "Bearer " + SUPABASE_ANON_KEY
-    };
+  function sbHeaders(extra){
+    const headers = Object.assign({ apikey: SUPABASE_ANON_KEY }, extra || {});
+    // 老式 anon key 是 JWT，要同时放进 Authorization；新的 sb_publishable_ 只走 apikey。
+    if (SUPABASE_ANON_KEY.startsWith("eyJ")) {
+      headers.Authorization = "Bearer " + SUPABASE_ANON_KEY;
+    }
+    return headers;
   }
 
   function emptyRow(text){
@@ -595,7 +598,7 @@
     try {
       const res = await fetch(SUPABASE_URL + "/rest/v1/rpc/submit_score", {
         method: "POST",
-        headers: Object.assign({ "Content-Type": "application/json" }, sbHeaders()),
+        headers: sbHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ p_name: name, p_score: state.finalScore || 0 })
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
