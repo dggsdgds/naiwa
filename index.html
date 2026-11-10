@@ -376,8 +376,8 @@
   //   （两者都可以公开，千万别用 service_role / sb_secret_...）
   // 两行都替换掉之后排行榜才会启用；保持占位符时会提示“还没接上”。
   // ============================================================
-  const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
-  const SUPABASE_ANON_KEY = "YOUR-SUPABASE-ANON-KEY";
+  const SUPABASE_URL = "https://onjynrvsnwmjasjfvkuk.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_5Lp5xAroYF2BmHmIByC_SQ_hR0NAttB";
 
   const LB_LIMIT = 20;
   const LB_NAME_KEY = "naiwa.player.name";
@@ -558,7 +558,7 @@
       rank.textContent = String(i + 1);
       const name = document.createElement("span");
       name.className = "lb-name";
-      name.textContent = String(row.name == null ? "" : row.name);
+      name.textContent = String(row.player_name == null ? "" : row.player_name);
       const score = document.createElement("span");
       score.className = "lb-score";
       score.textContent = String(row.score == null ? 0 : row.score);
@@ -575,7 +575,7 @@
     }
     lbStatus.textContent = "加载中…";
     try {
-      const url = SUPABASE_URL + "/rest/v1/leaderboard?select=name,score&order=score.desc,updated_at.asc&limit=" + LB_LIMIT;
+      const url = SUPABASE_URL + "/rest/v1/leaderboard?select=player_name,score&order=score.desc,created_at.asc&limit=" + LB_LIMIT;
       const res = await fetch(url, { headers: sbHeaders() });
       if (!res.ok) throw new Error("HTTP " + res.status);
       renderLeaderboard(await res.json());
